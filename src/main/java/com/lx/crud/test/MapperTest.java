@@ -4,11 +4,15 @@ import com.lx.crud.bean.Department;
 import com.lx.crud.bean.Employee;
 import com.lx.crud.dao.DepartmentMapper;
 import com.lx.crud.dao.EmployeeMapper;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 测试dao层的工作
@@ -26,6 +30,9 @@ public class MapperTest {
 
     @Autowired
     EmployeeMapper employeeMapper;
+
+    @Autowired
+    SqlSession sqlSession;
 
     /**
      * 测试DepartmentMapper
@@ -47,7 +54,15 @@ public class MapperTest {
         //employeeMapper.insertSelective(new Employee(null, "Jerry", "M", "Jerry@163.com", 1));
 
         //3.批量插入多个员工;使用可以批量操作的sqlSession
+//        EmployeeMapper mapper = sqlSession.getMapper(EmployeeMapper.class);
+//        for (int i = 0; i< 1000; i++){
+//            String uuid = UUID.randomUUID().toString().substring(0, 5)+i;
+//            mapper.insertSelective(new Employee(null, uuid, "M", uuid+"@163.com", 1));
+//        }
+//        System.out.println("批量执行成功!");
 
+        List<Employee> employees = employeeMapper.selectByExampleWithDept(null);
+        System.out.println(employees);
 
 
     }

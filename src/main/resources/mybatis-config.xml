@@ -10,5 +10,10 @@
     <typeAliases>
         <package name="com.lx.crud.bean" />
     </typeAliases>
+
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor"></plugin>
+    </plugins>
+
     
 </configuration>
