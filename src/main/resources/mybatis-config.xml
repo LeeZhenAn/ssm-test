@@ -12,7 +12,10 @@
     </typeAliases>
 
     <plugins>
-        <plugin interceptor="com.github.pagehelper.PageInterceptor"></plugin>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!--配置分页合理化参数，如果点击的页数<=0或大于已有页数，将其合理化-->
+            <property name="reasonable" value="true"/>
+        </plugin>
     </plugins>
 
     

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -37,7 +38,7 @@ public class EmployeeController {
         //使用pageInfo包装查询后的结果,只需将pageInfo交给页码就行
         //封装了详细的分页信息，包括我们查询出来的数据,传入连续显示的页数
         PageInfo page = new PageInfo(emps, 5);
-        return Msg.success().add("page", page);
+        return Msg.success().add("pageInfo", page);
     }
 
     /**
@@ -59,6 +60,18 @@ public class EmployeeController {
         PageInfo page = new PageInfo(emps, 5);
         model.addAttribute("pageInfo",page);
         return "list";
+    }
+
+    /**
+     * 员工保存
+     * @param employee
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/emps", method = RequestMethod.POST)
+    public Msg saveEmp(Employee employee){
+        employeeService.saveEmp(employee);
+        return Msg.success();
     }
 
 
