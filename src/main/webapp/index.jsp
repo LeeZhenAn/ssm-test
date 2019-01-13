@@ -175,6 +175,10 @@
             //保存信息
             $("#emp_save_btn").click(function () {
                 //1.模态框中填写的表单数据提交给服务器进行保存
+                //2.先将要提交给服务器的数据进行校验
+                if(!validate_add_form()){
+                    return false;
+                }
                 //2.发送ajax请求保存成功
                 $.ajax({
                     url: "${pageContext.request.contextPath }/emps",
@@ -193,6 +197,13 @@
                 });
             });
         });
+        
+        //校验表单数据的方法
+        function validate_add_form() {
+            //1.拿到要校验的数据，使用正则表达式
+            var empName = $("#empName_add_input").val();
+            var regName =
+        }
 
         //查出所有的部门信息并显示在下拉列表中
         function getDepts() {
