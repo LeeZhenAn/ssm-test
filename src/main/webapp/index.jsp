@@ -10,7 +10,8 @@
     --%>
     <script src="${pageContext.request.contextPath }/static/js/jquery-3.3.1.min.js"></script>
     <!-- Bootstrap -->
-    <link href="${pageContext.request.contextPath }/static/bootstrap/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath }/static/bootstrap/bootstrap-3.3.7-dist/css/bootstrap.min.css"
+          rel="stylesheet">
     <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
     <script src="${pageContext.request.contextPath }/static/bootstrap/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
     <script>
@@ -18,7 +19,7 @@
         var totalRecord;
 
         //1.页面加载完成以后，直接去发送一个ajax请求，要到分页数据
-        $(function(){
+        $(function () {
             //去首页
             to_page(1);
         });
@@ -30,24 +31,24 @@
             $.each(emps, function (index, item) {
                 var empIdTd = $("<td></td>").append(item.empId);
                 var empNameTd = $("<td></td>").append(item.empName);
-                var genderTd = $("<td></td>").append(item.gender=='M'?"男":"女");
+                var genderTd = $("<td></td>").append(item.gender == 'M' ? "男" : "女");
                 var emailTd = $("<td></td>").append(item.email);
                 var deptNameTd = $("<td></td>").append(item.department.deptName);
                 /**
                  *  <button class="btn btn-primary btn-sm">
-                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-                            编辑
-                    </button>
+                 <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                 编辑
+                 </button>
 
-                    <button class="btn btn-danger btn-sm">
-                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                            删除
-                    </button>
+                 <button class="btn btn-danger btn-sm">
+                 <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                 删除
+                 </button>
                  */
                 var editBtn = $("<button></button>").addClass("btn btn-primary btn-sm")
-                                .append($("<span></span>").addClass("glyphicon glyphicon-pencil")).append("编辑");
+                    .append($("<span></span>").addClass("glyphicon glyphicon-pencil")).append("编辑");
                 var delBtn = $("<button></button>").addClass("btn btn-danger btn-sm")
-                                .append($("<span></span>").addClass("glyphicon glyphicon-trash")).append("删除");
+                    .append($("<span></span>").addClass("glyphicon glyphicon-trash")).append("删除");
                 var btnTd = $("<td></td>").append(editBtn).append(" ").append(delBtn);
                 //append方法执行完成以后还是返回原来的元素
                 $("<tr></tr>").append(empIdTd)
@@ -65,12 +66,12 @@
         function build_page_info(result) {
             $("#page_info_area").empty();
             $("#page_info_area").append("当前"
-                +result.extend.pageInfo.pageNum
-                +"页，总"
-                +result.extend.pageInfo.pages
-                +"页，总"
-                +result.extend.pageInfo.total
-                +"条记录");
+                + result.extend.pageInfo.pageNum
+                + "页，总"
+                + result.extend.pageInfo.pages
+                + "页，总"
+                + result.extend.pageInfo.total
+                + "条记录");
             totalRecord = result.extend.pageInfo.total;
         }
 
@@ -96,7 +97,6 @@
             }
 
 
-
             var nextPageLi = $("<li></li>").append($("<a></a>").append("&raquo;"));
             var lastPageLi = $("<li></li>").append($("<a></a>").append("末页").attr("href", "#"));
             //判断是否有后一页
@@ -114,14 +114,13 @@
             }
 
 
-
             //添加首页和前一页的提示
             ul.append(firstPageLi).append(prePageLi);
             //item 1,2,3,4,5 遍历给ul中添加页码提示
-            $.each(result.extend.pageInfo.navigatepageNums,function (index, item) {
+            $.each(result.extend.pageInfo.navigatepageNums, function (index, item) {
                 var numLi = $("<li></li>").append($("<a></a>").append(item));
                 //判断点击的是否是当前页码
-                if(result.extend.pageInfo.pageNum == item){
+                if (result.extend.pageInfo.pageNum == item) {
                     numLi.addClass("active");
                 }
                 //当li点击后发送ajax请求，由于是ajax请求，因此每次点击事件前应清空数据
@@ -142,8 +141,8 @@
         //点击页数跳转
         function to_page(pn) {
             $.ajax({
-                url:"${pageContext.request.contextPath }/emps",
-                data: "pn="+pn,
+                url: "${pageContext.request.contextPath }/emps",
+                data: "pn=" + pn,
                 type: "GET",
                 success: function (result) {
                     //console.log(result);
@@ -163,6 +162,9 @@
         //点击新增按钮弹出模态框
         $(function () {
             $("#emp_add_modal_btn").click(function () {
+                //清除表单数据(表单重置)[dom对象方法，在jquery取出属性后加[0]]
+                $("#empAddModal form")[0].reset();
+
                 //发送ajax请求，查出部门信息，显示在下拉列表中
                 getDepts();
 
@@ -176,7 +178,11 @@
             $("#emp_save_btn").click(function () {
                 //1.模态框中填写的表单数据提交给服务器进行保存
                 //2.先将要提交给服务器的数据进行校验
-                if(!validate_add_form()){
+                if (!validate_add_form()) {
+                    return false;
+                }
+                //3.判断之前的ajax用户名校验是否成功，如果成功
+                if ($(this).attr("ajax-va") == "error") {
                     return false;
                 }
                 //2.发送ajax请求保存成功
@@ -196,14 +202,73 @@
 
                 });
             });
+
+            //检测姓名是否重复
+            $("#empName_add_input").change(function () {
+                var empName = this.value;
+                //发送ajax请求,校验用户名是否可用
+                $.ajax({
+                    url: "${pageContext.request.contextPath }/checkuser",
+                    data: "empName=" + empName,
+                    type: "POST",
+                    success: function (result) {
+                        if (result.code == 100) {
+                            show_validate_msg("#empName_add_input", "success", "用户名可用");
+                            $("#emp_save_btn").attr("ajax-va", "success");
+                        } else {
+                            show_validate_msg("#empName_add_input", "error", "用户名不可用");
+                            $("#emp_save_btn").attr("ajax-va", "error");
+                        }
+                    }
+                });
+            });
+
         });
-        
+
         //校验表单数据的方法
         function validate_add_form() {
             //1.拿到要校验的数据，使用正则表达式
             var empName = $("#empName_add_input").val();
-            var regName =
+            var regName = /(^[a-zA-Z0-9_-]{6,16}$)|(^[\u2E80-\u9FFF]{2,5})/;
+            if (!regName.test(empName)) {
+                //alert("用户名需要由2-5位中文组成或者6-16位英文组成!");
+                show_validate_msg("#empName_add_input", "error", "用户名需要由2-5位中文组成或者6-16位英文组成!");
+
+                return false;
+            } else {
+                show_validate_msg("#empName_add_input", "success", "");
+            }
+
+            //2.校验邮箱信息
+            var email = $("#email_add_input").val();
+            var regEmail = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
+            if (!regEmail.test(email)) {
+                //alert("邮箱格式不正确!");
+                show_validate_msg("#email_add_input", "error", "邮箱格式不正确!");
+                return false;
+            } else {
+                show_validate_msg("#email_add_input", "success", "");
+            }
+
+            return true;
         }
+
+        //校验方法相同，抽取出一个函数
+        function show_validate_msg(ele, status, msg) {
+            //清除当前元素校验状态
+            $(ele).parent().removeClass("has-success has-error");
+            $(ele).next("span").text("");
+            if ("success" == status) {
+                $(ele).parent().addClass("has-success");
+                $(ele).next("span").text(msg);
+            } else if ("error" == status) {
+                $(ele).parent().addClass("has-error");
+                $(ele).next("span").text(msg);
+            }
+        }
+
+
+
 
         //查出所有的部门信息并显示在下拉列表中
         function getDepts() {
@@ -231,7 +296,8 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
                 <h4 class="modal-title" id="myModalLabel">员工添加</h4>
             </div>
             <div class="modal-body">
@@ -239,13 +305,17 @@
                     <div class="form-group">
                         <label class="col-sm-2 control-label">empName</label>
                         <div class="col-sm-10">
-                            <input type="text" name="empName" class="form-control" id="empName_add_input" placeholder="empName">
+                            <input type="text" name="empName" class="form-control" id="empName_add_input"
+                                   placeholder="empName"/>
+                            <span class="help-block"></span>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-sm-2 control-label">email</label>
                         <div class="col-sm-10">
-                            <input type="text" name="email" class="form-control" id="email_add_input" placeholder="email@163.com">
+                            <input type="text" name="email" class="form-control" id="email_add_input"
+                                   placeholder="email@163.com">
+                            <span class="help-block"></span>
                         </div>
                     </div>
                     <div class="form-group">
@@ -298,14 +368,14 @@
         <div class="col-md-12">
             <table class="table table-hover" id="emps_table">
                 <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>empName</th>
-                        <th>gender</th>
-                        <th>email</th>
-                        <th>deptName</th>
-                        <th>操作</th>
-                    </tr>
+                <tr>
+                    <th>#</th>
+                    <th>empName</th>
+                    <th>gender</th>
+                    <th>email</th>
+                    <th>deptName</th>
+                    <th>操作</th>
+                </tr>
                 </thead>
                 <tbody>
 

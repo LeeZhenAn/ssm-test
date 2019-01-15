@@ -74,5 +74,20 @@ public class EmployeeController {
         return Msg.success();
     }
 
+    /**
+     * 检验用户名是否合法
+     * @param empName
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/checkuser")
+    public Msg checkuser(@RequestParam("empName") String empName){
+        boolean b = employeeService.checkUser(empName);
+        if (b){
+            return Msg.success();
+        }
+        return Msg.fail();
+    }
+
 
 }
