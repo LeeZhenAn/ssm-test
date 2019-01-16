@@ -2,6 +2,7 @@ package com.lx.crud.servcie;
 
 import com.lx.crud.bean.Employee;
 import com.lx.crud.bean.EmployeeExample;
+import com.lx.crud.bean.Msg;
 import com.lx.crud.dao.EmployeeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,5 +43,14 @@ public class EmployeeService {
         long count = employeeMapper.countByExample(example);
 
         return count==0;
+    }
+
+    /**
+     * 按照员工id查询id
+     * @param id
+     * @return
+     */
+    public Employee getEmp(Integer id) {
+        return employeeMapper.selectByPrimaryKey(id);
     }
 }
