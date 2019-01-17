@@ -116,12 +116,66 @@ public class EmployeeController {
         return Msg.fail().add("va_msg", "用户名不可用!");
     }
 
+    /**
+     * 根据id查询员工
+     * @param id
+     * @return
+     */
     @ResponseBody
     @GetMapping("/emp/{id}")
     public Msg getEmp(@PathVariable("id") Integer id){
 
         Employee employee = employeeService.getEmp(id);
         return Msg.success().add("emp", employee);
+    }
+
+    /**
+     * 如果直接发送ajax=PUT请求
+     * 封装的数据
+     *  Employee{empId=1009, empName='null', gender='null', email='null', dId=null, department=null}
+     * 员工更新的方法
+     *
+     * 问题：
+     * 请求体中有数据，但是Employee对象封装不上；
+     * update tbl_emp where emp_id = 1014;
+     *
+     * 原因：
+     * Tomact:
+     *  1.将请求体中的数据封装成一个amp
+     *  2.request.getParameter("empName")就会从这个map中取值
+     *  3.SpringMVC封装POJO对象的时候会把POJO中的每个属性的值，reuqest.getParameter("empName")
+     *
+     *  AJAX发送PUT请求发生的BUG:
+     *      PUT请求，请求体中的数据：request.getParameter("empName")
+     *      TOMCAT检测是PUT请求不会封装请求体中的数据为map,只有POST形式请求才封装请求体为map
+     *
+     *      org.apache.catalina.connector.Request--parseParameter() 3111
+     *      protected String parseBodyMethods = "POST";
+     * 	    if( !getConnector().isParseBodyMethod(getMethod()) ) {
+     *                 success = true;
+     *                 return;
+     *      }
+     *
+     * 解决方案
+     * 我们要能支持知己发送PUT之类的请求还有封装请求体中的数据
+     * 1.配置上HttpPutFormContentFilter
+     * 2.它的作用：将请求体中的数据解析包装成一个map
+     * 3.request被重新包装,request.getParameter()被重写，就会从自己的map中取值
+     * @param employee
+     * @return
+     */
+    @ResponseBody
+    @PutMapping("/emp/{empId}")
+    public Msg saveEmp(Employee employee){
+        employeeService.updateEmp(employee);
+        return Msg.success();
+    }
+
+    @ResponseBody
+    @DeleteMapping("/emp/{id}")
+    public Msg deleteEmpById(@PathVariable("id") Integer id){
+        employeeService.deleteEmpById(id);
+        return Msg.success();
     }
 
 }

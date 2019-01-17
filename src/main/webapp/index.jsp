@@ -16,7 +16,7 @@
     <script src="${pageContext.request.contextPath }/static/bootstrap/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
     <script>
         //定义一个全局变量保存总记录数
-        var totalRecord;
+        var totalRecord, currentPage;
 
         //1.页面加载完成以后，直接去发送一个ajax请求，要到分页数据
         $(function () {
@@ -47,10 +47,17 @@
                  */
                 var editBtn = $("<button></button>").addClass("btn btn-primary btn-sm edit_btn")
                     .append($("<span></span>").addClass("glyphicon glyphicon-pencil")).append("编辑");
+
                 //为编辑按钮添加一个自定义的属性，来表示当前员工id
                 editBtn.attr("edit-id", item.empId);
+
+
                 var delBtn = $("<button></button>").addClass("btn btn-danger btn-sm delete_btn")
                     .append($("<span></span>").addClass("glyphicon glyphicon-trash")).append("删除");
+
+                //为输出按钮添加一个自定义的属性，来表示当前员工id
+                delBtn.attr("del-id", item.empId);
+
                 var btnTd = $("<td></td>").append(editBtn).append(" ").append(delBtn);
                 //append方法执行完成以后还是返回原来的元素
                 $("<tr></tr>").append(empIdTd)
@@ -75,6 +82,7 @@
                 + result.extend.pageInfo.total
                 + "条记录");
             totalRecord = result.extend.pageInfo.total;
+            currentPage = result.extend.pageInfo.pageNum;
         }
 
         //解析显示分页条，点击分页能去下一页...
@@ -196,7 +204,7 @@
                     type: "POST",
                     data: $("#empAddModal form").serialize(),
                     success: function (result) {
-                        if (result.code == 100){
+                        if (result.code == 100) {
                             //alert(result.msg);
                             //员工保存成功:
                             //1.关闭模态框
@@ -217,7 +225,6 @@
                                 show_validate_msg("#empName_add_input", "error", "用户名需要由2-5位中文组成或者6-16位英文组成!");
                             }
                         }
-
 
 
                     }
@@ -246,7 +253,7 @@
             });
 
         });
-        
+
         //表单完整重置方法
         function rest_form(ele) {
             $(ele)[0].reset();
@@ -270,17 +277,25 @@
             }
 
             //2.校验邮箱信息
-            var email = $("#email_add_input").val();
-            var regEmail = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
-            if (!regEmail.test(email)) {
-                //alert("邮箱格式不正确!");
-                show_validate_msg("#email_add_input", "error", "邮箱格式不正确!");
+            if (!validate_email("#email_add_input")) {
                 return false;
-            } else {
-                show_validate_msg("#email_add_input", "success", "");
             }
 
             return true;
+        }
+
+        function validate_email(ele) {
+            var email = $(ele).val();
+            var regEmail = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
+            if (!regEmail.test(email)) {
+                //alert("邮箱格式不正确!");
+                show_validate_msg(ele, "error", "邮箱格式不正确!");
+                return false;
+            } else {
+                show_validate_msg(ele, "success", "");
+                return true;
+            }
+
         }
 
         //校验方法相同，抽取出一个函数
@@ -319,27 +334,77 @@
     </script>
     <script>
         $(function () {
+            //编辑按钮单击
             //1.我们是按钮创建之前就绑定了click，所以绑定不上
             //解决方法:
             //1).可以在创建按钮的时候绑定 2).绑定点击live
             //jquery新版没有live,使用on进行代替
             $(document).on("click", ".edit_btn", function () {
-               //alert("edit");
+                //alert("edit");
                 //1.查出部门信息，并显示部门列表
                 getDepts("#empUpdateModal select");
                 //2.查出员工信息，显示员工列表
                 getEmp($(this).attr("edit-id"));
+
+                //3.把员工id传递给模态框的更新按钮
+                $("#emp_update_btn").attr("edit-id", $(this).attr("edit-id"));
                 //弹出模态框
                 $("#empUpdateModal").modal({
                     backdrop: "static"
                 });
 
             });
+
+            //删除按钮单击 单个删除
+            $(document).on("click", ".delete_btn", function () {
+                //1.弹出是否确认删除按钮对话框
+                var empName = $(this).parents("tr").find("td:eq(1)").text();
+                var empId = $(this).attr("del-id");
+                //alert($(this).parents("tr").find("td:eq(1)").text());
+                if (confirm("确认删除【" + empName + "】吗?")) {
+                    //确认，发送ajax请求即可
+                    $.ajax({
+                        url: "${pageContext.request.contextPath }/emp/" + empId,
+                        type: "DELETE",
+                        success: function (result) {
+                            alert(result.msg);
+                            //回到本页
+                            to_page(currentPage);
+                        }
+
+                    });
+                }
+            });
+
+            //为更新按钮绑定单击事件
+            $("#emp_update_btn").click(function () {
+                //1.验证邮箱是否合法
+                if (!validate_email("#email_update_input")) {
+                    return false;
+                }
+
+                //2.发送ajax请求保存更新的员工数据
+                $.ajax({
+                    url: "${pageContext.request.contextPath }/emp/" + $(this).attr("edit-id"),
+                    type: "PUT",
+                    data: $("#empUpdateModal form").serialize(),
+                    success: function (result) {
+                        //alert(result.msg);
+                        //1.关闭对话框
+                        $("#empUpdateModal").modal("hide");
+                        //2.回到本页
+                        to_page(currentPage);
+                    }
+                });
+
+            });
+
+
         });
-        
+
         function getEmp(id) {
             $.ajax({
-                url: "${pageContext.request.contextPath }/emp/"+id,
+                url: "${pageContext.request.contextPath }/emp/" + id,
                 type: "GET",
                 success: function (result) {
                     //console.info(result);
@@ -386,7 +451,8 @@
                         <label class="col-sm-2 control-label">gender</label>
                         <div class="col-sm-10">
                             <label class="radio-inline">
-                                <input type="radio" name="gender" id="gender1_update_input" value="M" checked="checked"> 男
+                                <input type="radio" name="gender" id="gender1_update_input" value="M" checked="checked">
+                                男
                             </label>
                             <label class="radio-inline">
                                 <input type="radio" name="gender" id="gender2_update_input" value="F"> 女
