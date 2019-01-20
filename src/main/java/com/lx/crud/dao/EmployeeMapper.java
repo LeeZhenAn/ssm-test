@@ -2,6 +2,8 @@ package com.lx.crud.dao;
 
 import com.lx.crud.bean.Employee;
 import com.lx.crud.bean.EmployeeExample;
+
+import java.io.Serializable;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
@@ -10,7 +12,7 @@ public interface EmployeeMapper {
 
     int deleteByExample(EmployeeExample example);
 
-    int deleteByPrimaryKey(Integer empId);
+    int deleteByPrimaryKey(Serializable empId);
 
     int insert(Employee record);
 
